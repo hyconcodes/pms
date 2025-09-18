@@ -40,7 +40,17 @@ new #[Layout('components.layouts.auth')] class extends Component {
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        // Get authenticated user
+        $user = Auth::user();
+
+        // Redirect based on role
+        if ($user->hasRole('super-admin')) {
+            $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        } elseif ($user->hasRole('patient')) {
+            $this->redirectIntended(default: route('patient.dashboard', absolute: false), navigate: true);
+        } else {
+            $this->redirectIntended(default: route('admin.dashboard', absolute: false), navigate: true);
+        }
     }
 
     /**

@@ -15,8 +15,18 @@
 
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Platform')" class="grid">
+                @role(['super-admin'])
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                @endrole
+                @role(['patient'])
+                <flux:navlist.item icon="home" :href="route('patient.dashboard')" :current="request()->routeIs('patient.dashboard')"
+                    wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                @endrole
+                @role(['doctor', 'nurse'])
+                <flux:navlist.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')"
+                    wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                @endrole
                 @can(['view.roles', 'create.roles', 'edit.roles', 'delete.roles', 'assign.permissions'])
                     <flux:navlist.item icon="shield-check" :href="route('role-management')"
                         :current="request()->routeIs('role-management')" wire:navigate>{{ __('Role Management') }}
@@ -25,6 +35,11 @@
                 @can(['view.staff', 'create.staff', 'edit.staff', 'delete.staff'])
                     <flux:navlist.item icon="user" :href="route('staff.sys')"
                         :current="request()->routeIs('staff.sys')" wire:navigate>{{ __('Manage Admin') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['view.medical.records'])
+                    <flux:navlist.item icon="user" :href="route('admin.patients')"
+                        :current="request()->routeIs('admin.patients')" wire:navigate>{{ __('Manage Patients') }}
                     </flux:navlist.item>
                 @endcan
             </flux:navlist.group>

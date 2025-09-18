@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use Spatie\Permission\Models\Role;
 
 new #[Layout('components.layouts.auth')] class extends Component {
     public string $name = '';
@@ -21,17 +22,35 @@ new #[Layout('components.layouts.auth')] class extends Component {
     {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z]+\.[0-9]+@bouesti\.edu\.ng$/'],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'email.regex' => 'Email must be in the format firstname.matric_no@bouesti.edu.ng (e.g., john.12345678@bouesti.edu.ng)! 📧',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        // Extract matric number from email
+        preg_match('/\.([0-9]+)@/', $validated['email'], $matches);
+        $matric_no = $matches[1];
 
-        event(new Registered(($user = User::create($validated))));
+        // Check if matric number already exists
+        if (User::where('matric_no', $matric_no)->exists()) {
+            $this->addError('email', 'This matric number is already registered!');
+            return;
+        }
+
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['matric_no'] = $matric_no;
+
+        $user = User::create($validated);
+        
+        // Assign patient role to newly registered user
+        $user->assignRole('patient');
+
+        event(new Registered($user));
 
         Auth::login($user);
 
-        $this->redirectIntended(route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(route('patient.dashboard', absolute: false), navigate: true);
     }
 }; ?>
 
@@ -60,7 +79,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             type="email"
             required
             autocomplete="email"
-            placeholder="email@example.com"
+            placeholder="firstname.matric_no@bouesti.edu.ng"
         />
 
         <!-- Password -->
