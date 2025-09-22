@@ -24,6 +24,10 @@ class User extends Authenticatable
         'email',
         'password',
         'matric_no',
+        'phone',
+        'address',
+        'date_of_birth',
+        'emergency_contact',
     ];
 
     /**
@@ -59,5 +63,11 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    // add specializations relationship
+    public function specializations()
+    {
+        return $this->belongsToMany(Specialization::class);
     }
 }

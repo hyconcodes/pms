@@ -9,14 +9,23 @@ use Livewire\Volt\Component;
 new class extends Component {
     public string $name = '';
     public string $email = '';
+    public ?string $phone = '';
+    public ?string $address = '';
+    public ?string $date_of_birth = '';
+    public ?string $emergency_contact = '';
 
     /**
      * Mount the component.
      */
     public function mount(): void
     {
-        $this->name = Auth::user()->name;
-        $this->email = Auth::user()->email;
+        $user = Auth::user();
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->phone = $user->phone;
+        $this->address = $user->address;
+        $this->date_of_birth = $user->date_of_birth;
+        $this->emergency_contact = $user->emergency_contact;
     }
 
     /**
@@ -28,15 +37,18 @@ new class extends Component {
 
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user->id)
-            ],
+            // 'email' => [
+            //     'required',
+            //     'string',
+            //     'lowercase',
+            //     'email',
+            //     'max:255',
+            //     Rule::unique(User::class)->ignore($user->id)
+            // ],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string'],
+            'date_of_birth' => ['nullable', 'date'],
+            'emergency_contact' => ['nullable', 'string'],
         ]);
 
         $user->fill($validated);
@@ -59,7 +71,6 @@ new class extends Component {
 
         if ($user->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false));
-
             return;
         }
 
@@ -72,12 +83,12 @@ new class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your profile information')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 
             <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+                <flux:input wire:model="email" disabled readonly :label="__('Email')" type="email" required autocomplete="email" />
 
                 @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
                     <div>
@@ -97,6 +108,14 @@ new class extends Component {
                     </div>
                 @endif
             </div>
+
+            <flux:input wire:model="phone" :label="__('Phone')" type="tel" autocomplete="tel" />
+            
+            <flux:textarea wire:model="address" :label="__('Address')" rows="3" />
+            
+            <flux:input wire:model="date_of_birth" :label="__('Date of Birth')" type="date" />
+            
+            <flux:textarea wire:model="emergency_contact" :label="__('Emergency Contact')" rows="3" />
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">

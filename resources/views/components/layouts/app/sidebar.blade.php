@@ -23,7 +23,7 @@
                 <flux:navlist.item icon="home" :href="route('patient.dashboard')" :current="request()->routeIs('patient.dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 @endrole
-                @role(['doctor', 'nurse'])
+                @role(['doctor', 'pharmacist'])
                 <flux:navlist.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 @endrole
@@ -34,12 +34,17 @@
                 @endcan
                 @can(['view.staff', 'create.staff', 'edit.staff', 'delete.staff'])
                     <flux:navlist.item icon="user" :href="route('staff.sys')"
-                        :current="request()->routeIs('staff.sys')" wire:navigate>{{ __('Manage Admin') }}
+                        :current="request()->routeIs('staff.sys')" wire:navigate>{{ __('Manage Staffs') }}
                     </flux:navlist.item>
                 @endcan
                 @can(['view.medical.records'])
                     <flux:navlist.item icon="user" :href="route('admin.patients')"
                         :current="request()->routeIs('admin.patients')" wire:navigate>{{ __('Manage Patients') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['view.specializations', 'create.specializations', 'edit.specializations', 'delete.specializations'])
+                    <flux:navlist.item icon="briefcase" :href="route('admin.specializations')"
+                        :current="request()->routeIs('admin.specializations')" wire:navigate>{{ __('Specialization Management') }}
                     </flux:navlist.item>
                 @endcan
             </flux:navlist.group>

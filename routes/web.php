@@ -17,6 +17,7 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');
     Volt::route('settings/password', 'settings.password')->name('password.edit');
     Volt::route('settings/appearance', 'settings.appearance')->name('appearance.edit');
+    Volt::route('settings/specializations', 'settings.specializations')->middleware('role:doctor')->name('specializations.edit');
 
     // Role Management Routes - Only accessible by super-admin
     Route::middleware(['role:super-admin'])->group(function () {
@@ -38,6 +39,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.medical-records');
         Volt::route('/admin-dashboard', 'admin.dashboard')
             ->name('admin.dashboard');
+        Volt::route('/specialization-management-board', 'admin.specializations')
+        ->middleware(['permission:view.specializations|create.specializations|edit.specializations|delete.specializations'])
+        ->name('admin.specializations');
 });
 
 require __DIR__ . '/auth.php';

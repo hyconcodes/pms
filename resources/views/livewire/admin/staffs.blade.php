@@ -20,7 +20,7 @@ new class extends Component {
         'name' => 'required|min:3|max:100',
         'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z0-9._%+-]+@bouesti\.edu\.ng$/'],
         'password' => 'required|min:8',
-        'role' => 'required|in:doctor,nurse'
+        'role' => 'required|in:doctor,pharmacist'
     ];
 
     protected $messages = [
@@ -38,7 +38,7 @@ new class extends Component {
 
     public function loadUsers() {
         $this->users = User::whereHas('roles', function($query) {
-            $query->whereIn('name', ['doctor', 'nurse']);
+            $query->whereNotIn('name', ['super-admin', 'patient']);
         })->latest()->get();
     }
 
@@ -103,7 +103,7 @@ new class extends Component {
                 'unique:users,email,' . $this->userId,
                 'regex:/^[a-zA-Z0-9._%+-]+@bouesti\.edu\.ng$/'
             ],
-            'role' => 'required|in:doctor,nurse'
+            'role' => 'required|in:doctor,pharmacist'
         ]);
 
         try {
@@ -200,10 +200,10 @@ new class extends Component {
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-zinc-700">Role</label>
-                            <select wire:model="role" class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm">
+                            <flux:select wire:model="role" class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm">
                                 <option value="doctor">Doctor</option>
-                                <option value="nurse">Nurse</option>
-                            </select>
+                                <option value="pharmacist">Pharmacist</option>
+                            </flux:select>
                             @error('role') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
                     </div>

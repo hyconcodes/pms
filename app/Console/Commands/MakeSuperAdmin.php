@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\User;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class MakeSuperAdmin extends Command
@@ -38,6 +39,8 @@ class MakeSuperAdmin extends Command
         
         // Check if super-admin role exists, create if not
         $superAdminRole = Role::where('name', 'super-admin')->first();
+        $allPermissions = Permission::all();
+
         if (!$superAdminRole) {
             $superAdminRole = Role::create(['name' => 'super-admin']);
             $this->info('Created super-admin role.');
@@ -45,6 +48,7 @@ class MakeSuperAdmin extends Command
         
         // Assign role to user
         $user->assignRole('super-admin');
+        $superAdminRole->givePermissionTo($allPermissions);
         
         $this->info("User {$email} has been assigned the super-admin role.");
         
