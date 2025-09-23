@@ -23,13 +23,32 @@ class MedicalRecord extends Model
         'weight',
         'height',
         'allergies',
-        'status'
+        'status',
+        'visit_type'
     ];
 
     protected $casts = [
         'appointment_date' => 'date',
-        'appointment_time' => 'datetime',
+        'appointment_time' => 'string',
         'weight' => 'decimal:2',
-        'height' => 'decimal:2'
+        'height' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
+    
+    /**
+     * Get the patient that owns the medical record.
+     */
+    public function patient()
+    {
+        return $this->belongsTo(User::class, 'patient_id');
+    }
+    
+    /**
+     * Get the doctor that the appointment is with.
+     */
+    public function doctor()
+    {
+        return $this->belongsTo(User::class, 'doctor_id');
+    }
 }

@@ -70,4 +70,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Specialization::class);
     }
+
+    public function patientAppointments()
+    {
+        return $this->hasMany(MedicalRecord::class, 'patient_id');
+    }
+    
+    public function patientRecords()
+    {
+        return $this->hasMany(MedicalRecord::class, 'patient_id');
+    }
 }
