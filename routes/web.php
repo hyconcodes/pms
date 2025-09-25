@@ -24,8 +24,10 @@ Route::middleware(['auth'])->group(function () {
         // Role management using Volt component
         Volt::route('/role-management', 'admin.roles')
             ->name('role-management');
-        Volt::route('/staffs-management-sys', 'admin.staffs')
+        Volt::route('/pharm-management-sys', 'admin.pharmacist')
             ->name('staff.sys');
+        Volt::route('/doc-management-sys', 'admin.doctor')
+            ->name('staff.doc');
     });
     Route::middleware(['role:patient'])->group(function () {
         Volt::route('/patient-dashboard', 'patients.dashboard')

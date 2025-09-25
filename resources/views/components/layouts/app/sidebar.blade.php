@@ -34,7 +34,12 @@
                 @endcan
                 @can(['view.staff', 'create.staff', 'edit.staff', 'delete.staff'])
                     <flux:navlist.item icon="user" :href="route('staff.sys')"
-                        :current="request()->routeIs('staff.sys')" wire:navigate>{{ __('Manage Staffs') }}
+                        :current="request()->routeIs('staff.sys')" wire:navigate>{{ __('Manage Pharmacists') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['view.staff', 'create.staff', 'edit.staff', 'delete.staff'])
+                    <flux:navlist.item icon="user" :href="route('staff.doc')"
+                        :current="request()->routeIs('staff.doc')" wire:navigate>{{ __('Manage Doctors') }}
                     </flux:navlist.item>
                 @endcan
                 @can(['view.medical.records'])

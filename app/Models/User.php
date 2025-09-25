@@ -28,6 +28,7 @@ class User extends Authenticatable
         'address',
         'date_of_birth',
         'emergency_contact',
+        'specialization_id',
     ];
 
     /**
@@ -39,6 +40,8 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    protected $with = ['specializations'];
 
     /**
      * Get the attributes that should be cast.
@@ -61,21 +64,26 @@ class User extends Authenticatable
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
 
     // add specializations relationship
     public function specializations()
     {
-        return $this->belongsToMany(Specialization::class);
+        return $this->belongsToMany(Specialization::class, 'staff_specializations', 'user_id', 'specialization_id');
+    }
+
+    public function specialization()
+    {
+        return $this->belongsTo(Specialization::class);
     }
 
     public function patientAppointments()
     {
         return $this->hasMany(MedicalRecord::class, 'patient_id');
     }
-    
+
     public function patientRecords()
     {
         return $this->hasMany(MedicalRecord::class, 'patient_id');

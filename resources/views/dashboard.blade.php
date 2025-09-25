@@ -67,8 +67,7 @@
                 const pharmacistCount =
                     {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where(
                             'roles.name',
-                            'pharmacist
-                    pharmacist',
+                            'pharmacist',
                         )->count() }};
                 const patientCount =
                     {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'patient')->count() }};

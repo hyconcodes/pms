@@ -11,7 +11,7 @@ new class extends Component {
     public $name;
     public $email;
     public $password;
-    public $role = 'doctor'; // Default role
+    public $role = 'pharmacist'; // Fixed role
     public $editMode = false;
     public $userId;
     public $showModal = false;
@@ -20,7 +20,7 @@ new class extends Component {
         'name' => 'required|min:3|max:100',
         'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z0-9._%+-]+@bouesti\.edu\.ng$/'],
         'password' => 'required|min:8',
-        'role' => 'required|in:doctor,pharmacist'
+        'role' => 'required|in:pharmacist'
     ];
 
     protected $messages = [
@@ -37,9 +37,7 @@ new class extends Component {
     }
 
     public function loadUsers() {
-        $this->users = User::whereHas('roles', function($query) {
-            $query->whereNotIn('name', ['super-admin', 'patient']);
-        })->latest()->get();
+        $this->users = User::role('pharmacist')->latest()->get();
     }
 
     public function create() {
@@ -63,7 +61,7 @@ new class extends Component {
 
             $this->reset(['name', 'email', 'password', 'showModal']);
             $this->loadUsers();
-            session()->flash('message', '🎉 New ' . ucfirst($this->role) . ' added successfully!');
+            session()->flash('message', '🎉 New pharmacist added successfully!');
         } catch (\Exception $e) {
             session()->flash('error', '😕 Something went wrong: ' . $e->getMessage());
         }
@@ -154,10 +152,10 @@ new class extends Component {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-semibold text-green-900 dark:text-green-100">Staff Management</h2>
+            <h2 class="text-2xl font-semibold text-green-900 dark:text-green-100">Pharmacist Management</h2>
             @can('create.staff')
             <flux:button wire:click="$set('showModal', true)" class="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium !text-white !bg-green-700">
-                Add New Staff
+                Add New Pharmacist
             </flux:button>
             @endcan
         </div>
@@ -199,12 +197,10 @@ new class extends Component {
                             @error('password') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-zinc-700">Role</label>
-                            <flux:select wire:model="role" class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm">
-                                <option value="doctor">Doctor</option>
-                                <option value="pharmacist">Pharmacist</option>
-                            </flux:select>
-                            @error('role') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            <input type="hidden" wire:model="role" value="pharmacist">
+                            <div class="mt-1 block w-full py-2 px-3 border border-zinc-300 bg-zinc-100 rounded-md text-zinc-700">
+                                Pharmacist
+                            </div>
                         </div>
                     </div>
                     <div class="mt-5 flex justify-end space-x-3">
@@ -227,7 +223,7 @@ new class extends Component {
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Email</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Role</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Account Type</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-green-700 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -236,7 +232,7 @@ new class extends Component {
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{{ $user->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{{ $user->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{{ ucfirst($user->roles->first()->name) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">Pharmacist</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             @can('edit.staff')
                             <flux:button wire:click="edit({{ $user->id }})" class="!text-green-600 hover:!text-green-800 mr-3">
