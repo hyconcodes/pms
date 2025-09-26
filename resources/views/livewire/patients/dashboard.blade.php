@@ -75,6 +75,8 @@ new class extends Component {
         try {
             $this->upcomingAppointments = MedicalRecord::with('doctor')
                 ->where('patient_id', auth()->id())
+                // ->where('appointment_date', '>=', now()->startOfDay())
+                // ->where('appointment_date', '<=', now()->addDays(30))
                 ->where('appointment_date', '>=', now())
                 ->where('appointment_date', '<=', now()->addDays(30))
                 ->orderBy('appointment_date')
@@ -141,13 +143,23 @@ new class extends Component {
     public function bookAppointment()
     {
         try {
+            // Check if user already has 2 or more pending appointments
+            $pendingAppointmentsCount = MedicalRecord::where('patient_id', auth()->id())
+                ->where('status', 'pending')
+                ->count();
+
+            if ($pendingAppointmentsCount >= 2) {
+                session()->flash('error', 'You already have 2 pending appointments. Please wait for them to be processed before booking more.');
+                return;
+            }
+
             // Log the reason_for_visit value before validation
             Log::info('Reason for visit before validation:', ['reason_for_visit' => $this->reason_for_visit]);
 
             $validatedData = $this->validate([
                 'doctor_id' => 'required|exists:users,id',
                 'specialty' => 'required|exists:specializations,name',
-                'reason_for_visit' => 'required|string|min:1',
+                // 'reason_for_visit' => 'required|string|min:1',
                 'appointment_date' => 'required|date|after_or_equal:today',
                 'preferred_time' => 'required|in:morning,afternoon',
                 'visit_type' => 'required|in:in-person,virtual',
@@ -179,7 +191,6 @@ new class extends Component {
                 session()->flash('error', 'The selected doctor is not available at the chosen time.');
                 return;
             }
-            dd($this->reason_for_visit);
             $appointment = MedicalRecord::create([
                 'patient_id' => auth()->id(),
                 'doctor_id' => $this->doctor_id,
@@ -334,7 +345,7 @@ new class extends Component {
 
             <!-- Recent Medical Records -->
             <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 mt-6">
-                <h2 class="text-xl font-semibold mb-4 text-zinc-800 dark:text-white">Recent Medical Records</h2>
+                <h2 class="text-xl font-semibold mb-4 text-zinc-800 dark:text-white">Recent Appointments</h2>
                 @if ($medicalRecords->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -352,6 +363,9 @@ new class extends Component {
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
                                         Status</th>
+                                    <th
+                                        class="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                        Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -372,6 +386,12 @@ new class extends Component {
                                                 {{ ucfirst($record->status) }}
                                             </span>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="{{ route('patient.appointment.details', $record->id) }}" 
+                                               class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                                                View Details
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -390,6 +410,7 @@ new class extends Component {
         <div class="relative top-20 mx-auto p-5 border max-w-4xl shadow-lg rounded-md bg-white dark:bg-zinc-800">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-zinc-900 dark:text-white">Book New Appointment</h3>
+
                 <flux:button wire:click="closeModal" class="text-zinc-400 hover:text-zinc-500">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -397,6 +418,19 @@ new class extends Component {
                     </svg>
                 </flux:button>
             </div>
+            
+            <!-- Success and Error Messages -->
+            @if (session()->has('message'))
+                <div class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                    {{ session('message') }}
+                </div>
+            @endif
+            
+            @if (session()->has('error'))
+                <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <form wire:submit="bookAppointment" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -446,8 +480,19 @@ new class extends Component {
                             @enderror
                         </div>
                     </div>
-
+                    
                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                Reason for Visit <span class="text-red-500">*</span>
+                            </label>
+                            <flux:textarea wire:model="reason_for_visit" rows="3"
+                                class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                placeholder="Please describe your reason for visit"></flux:textarea>
+                            @error('reason_for_visit')
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
+                            @enderror
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 Preferred Time <span class="text-red-500">*</span>
@@ -487,17 +532,6 @@ new class extends Component {
                             @enderror
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                                Reason for Visit <span class="text-red-500">*</span>
-                            </label>
-                            <flux:textarea wire:model="reason_for_visit" rows="3"
-                                class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                placeholder="Please describe your reason for visit"></flux:textarea>
-                            @error('reason_for_visit')
-                                <span class="text-red-600 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
                     </div>
                 </div>
 

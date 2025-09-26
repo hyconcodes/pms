@@ -30,18 +30,21 @@ Route::middleware(['auth'])->group(function () {
             ->name('staff.doc');
     });
     Route::middleware(['role:patient'])->group(function () {
-        Volt::route('/patient-dashboard', 'patients.dashboard')
+        Volt::route('/patient/dashboard', 'patients.dashboard')
             ->name('patient.dashboard');
-        });
-        Volt::route('/patient-management-board', 'admin.patients')
+        Volt::route('/patient/appointments/{appointment}', 'patients.view-appointment')
+            ->name('patient.appointment.details');
+    });
+
+    Volt::route('/patient/management-board', 'admin.patients')
         ->middleware(['permission:view.patients|create.patients|edit.patients|delete.patients|view.medical.records'])
         ->name('admin.patients');
-        Volt::route('/medical-records-board', 'admin.medical-records')
+    Volt::route('/admin/medical-records-board', 'admin.medical-records')
         ->middleware(['permission:view.medical.records|create.medical.records|edit.medical.records|delete.medical.records'])
         ->name('admin.medical-records');
-        Volt::route('/admin-dashboard', 'admin.dashboard')
-            ->name('admin.dashboard');
-        Volt::route('/specialization-management-board', 'admin.specializations')
+    Volt::route('/admin/dashboard', 'admin.dashboard')
+        ->name('admin.dashboard');
+    Volt::route('/admin/specialization-management-board', 'admin.specializations')
         ->middleware(['permission:view.specializations|create.specializations|edit.specializations|delete.specializations'])
         ->name('admin.specializations');
 });
