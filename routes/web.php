@@ -34,19 +34,28 @@ Route::middleware(['auth'])->group(function () {
             ->name('patient.dashboard');
         Volt::route('/patient/appointments/{appointment}', 'patients.view-appointment')
             ->name('patient.appointment.details');
-    });
-
+        });
+        
     Volt::route('/patient/management-board', 'admin.patients')
         ->middleware(['permission:view.patients|create.patients|edit.patients|delete.patients|view.medical.records'])
         ->name('admin.patients');
     Volt::route('/admin/medical-records-board', 'admin.medical-records')
         ->middleware(['permission:view.medical.records|create.medical.records|edit.medical.records|delete.medical.records'])
         ->name('admin.medical-records');
-    Volt::route('/admin/dashboard', 'admin.dashboard')
-        ->name('admin.dashboard');
+        // Doc dashboard
+    Volt::route('/doctors/dashboard', 'doctors.dashboard')
+    ->name('admin.dashboard');
     Volt::route('/admin/specialization-management-board', 'admin.specializations')
-        ->middleware(['permission:view.specializations|create.specializations|edit.specializations|delete.specializations'])
-        ->name('admin.specializations');
+    ->middleware(['permission:view.specializations|create.specializations|edit.specializations|delete.specializations'])
+    ->name('admin.specializations');
+    Volt::route('/doctor/{appointment}/appointments', 'doctors.update-appointments')
+        ->name('doctor.update.appointment');
+    Volt::route('/doctor/all-appointment', 'doctors.all-appointments')
+        ->middleware(['permission:approve.appointments'])
+        ->name('doctor.view.all.appointment');
+    Volt::route('/doctor/{patient_id}/all-patient', 'admin.view-patient')
+        ->middleware(['permission:view.patients'])
+        ->name('view.patient');
 });
 
 require __DIR__ . '/auth.php';

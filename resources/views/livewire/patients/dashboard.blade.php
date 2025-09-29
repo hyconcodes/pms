@@ -14,7 +14,6 @@ new class extends Component {
     public $reason_for_visit = ''; // Initialize with empty string
     public $appointment_date;
     public $preferred_time = 'morning';
-    public $visit_type = 'in-person';
     public $doctors;
     public $filteredDoctors = [];
     public $specialties;
@@ -77,6 +76,7 @@ new class extends Component {
                 ->where('patient_id', auth()->id())
                 // ->where('appointment_date', '>=', now()->startOfDay())
                 // ->where('appointment_date', '<=', now()->addDays(30))
+                ->where('status', 'pending')
                 ->where('appointment_date', '>=', now())
                 ->where('appointment_date', '<=', now()->addDays(30))
                 ->orderBy('appointment_date')
@@ -129,7 +129,7 @@ new class extends Component {
     {
         try {
             $this->showModal = false;
-            $this->reset(['doctor_id', 'specialty', 'reason_for_visit', 'appointment_date', 'preferred_time', 'visit_type']);
+            $this->reset(['doctor_id', 'specialty', 'reason_for_visit', 'appointment_date', 'preferred_time']);
             $this->filteredDoctors = [];
         } catch (\Exception $e) {
             Log::error('Error closing modal', [
@@ -162,7 +162,6 @@ new class extends Component {
                 // 'reason_for_visit' => 'required|string|min:1',
                 'appointment_date' => 'required|date|after_or_equal:today',
                 'preferred_time' => 'required|in:morning,afternoon',
-                'visit_type' => 'required|in:in-person,virtual',
             ]);
 
             // Verify doctor has the correct specialization
@@ -191,6 +190,12 @@ new class extends Component {
                 session()->flash('error', 'The selected doctor is not available at the chosen time.');
                 return;
             }
+
+            // Generate unique ID and concatenate with user matric_no
+            $uniqueId = Str::upper(Str::random(6));
+            $user = auth()->user();
+            $apid = 'APID' . $uniqueId . $user->matric_no;
+
             $appointment = MedicalRecord::create([
                 'patient_id' => auth()->id(),
                 'doctor_id' => $this->doctor_id,
@@ -198,8 +203,8 @@ new class extends Component {
                 'specialty' => $this->specialty,
                 'status' => 'pending',
                 'appointment_date' => $this->appointment_date,
-                'visit_type' => $this->visit_type,
                 'appointment_time' => $this->preferred_time,
+                'apid' => $apid,
             ]);
 
             Log::info('Appointment booked successfully', [
@@ -207,6 +212,7 @@ new class extends Component {
                 'patient_id' => auth()->id(),
                 'doctor_id' => $this->doctor_id,
                 'appointment_date' => $this->appointment_date,
+                'apid' => $apid,
             ]);
 
             $this->refreshDashboardData();
@@ -240,7 +246,7 @@ new class extends Component {
 }; ?>
 
 <main>
-    <div class="min-h-screen bg-zinc-50 dark:bg-zinc-900 p-4 sm:p-6 lg:p-8">
+    <div class="min-h-screen p-4 sm:p-6 lg:p-8">
         @if (session()->has('message'))
             <div
                 class="fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg {{ session('alert-type') === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-green-100 border-green-400 text-green-700' }} border">
@@ -296,8 +302,11 @@ new class extends Component {
                             <span class="text-lg font-bold text-green-600">{{ $upcomingAppointments->count() }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-zinc-600 dark:text-zinc-300">Recent Records</span>
-                            <span class="text-lg font-bold text-green-600">{{ $medicalRecords->count() }}</span>
+                            {{-- <span class="text-zinc-600 dark:text-zinc-300">Recent Records</span> --}}
+                            <flux:button href="{{ route('profile.edit') }}" size="sm"
+                                class="px-2 py-1 text-xs font-medium !text-green-600 border !border-green-600 rounded hover:!bg-green-600 hover:!text-white transition">
+                                View Profile
+                            </flux:button>
                         </div>
                     </div>
                 </div>
@@ -346,60 +355,88 @@ new class extends Component {
             <!-- Recent Medical Records -->
             <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 mt-6">
                 <h2 class="text-xl font-semibold mb-4 text-zinc-800 dark:text-white">Recent Appointments</h2>
-                @if ($medicalRecords->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-                            <thead>
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
-                                        Date</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
-                                        Doctor</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
-                                        Specialty</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
-                                        Status</th>
-                                    <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
-                                        Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
-                                @foreach ($medicalRecords as $record)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
-                                            {{ \Carbon\Carbon::parse($record->created_at)->format('M d, Y') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
-                                            Dr. {{ $record->doctor->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
-                                            {{ $record->specialty }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                class="px-2 py-1 text-xs rounded-full {{ $record->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ($record->status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
-                                                {{ ucfirst($record->status) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('patient.appointment.details', $record->id) }}" 
-                                               class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
-                                                View Details
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left Column: Table -->
+                    <div>
+                        @if ($medicalRecords->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                                Date
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-300 uppercase tracking-wider">
+                                                Actions
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                                        @foreach ($medicalRecords as $record)
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-white">
+                                                    {{ \Carbon\Carbon::parse($record->appointment_date)->format('M d, Y') }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 py-1 text-xs rounded-full {{ $record->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ($record->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
+                                                        {{ ucfirst($record->status) }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <a href="{{ route('patient.appointment.details', $record->id) }}" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                                                        View Details
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-zinc-600 dark:text-zinc-300">No medical records found</p>
+                        @endif
                     </div>
-                @else
-                    <p class="text-zinc-600 dark:text-zinc-300">No medical records found</p>
-                @endif
+
+                    <!-- Right Column: Calendar -->
+                    <div>
+                        <div class="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-zinc-800 dark:text-white">
+                                    {{ now()->format('F Y') }}
+                                </h3>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                                <div>S</div>
+                                <div>M</div>
+                                <div>T</div>
+                                <div>W</div>
+                                <div>T</div>
+                                <div>F</div>
+                                <div>S</div>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1">
+                                @php
+                                    $startOfMonth = now()->startOfMonth();
+                                    $startOfCalendar = $startOfMonth->copy()->startOfWeek();
+                                    $today = now()->format('Y-m-d');
+                                @endphp
+                                @for ($i = -1; $i < 42; $i++)
+                                    @php
+                                        $date = $startOfCalendar->copy()->addDays($i);
+                                        $isCurrentMonth = $date->month === $startOfMonth->month;
+                                        $isToday = $date->format('Y-m-d') === $today;
+                                    @endphp
+                                    <div class="{{ $isCurrentMonth ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-600' }} {{ $isToday ? 'bg-green-600 text-white rounded-full' : '' }} p-2 text-center text-sm">
+                                        {{ $date->day }}
+                                    </div>
+                                @endfor
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -418,14 +455,14 @@ new class extends Component {
                     </svg>
                 </flux:button>
             </div>
-            
+
             <!-- Success and Error Messages -->
             @if (session()->has('message'))
                 <div class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
                     {{ session('message') }}
                 </div>
             @endif
-            
+
             @if (session()->has('error'))
                 <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                     {{ session('error') }}
@@ -480,7 +517,7 @@ new class extends Component {
                             @enderror
                         </div>
                     </div>
-                    
+
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -509,25 +546,6 @@ new class extends Component {
                                 </label>
                             </div>
                             @error('preferred_time')
-                                <span class="text-red-600 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                                Visit Type <span class="text-red-500">*</span>
-                            </label>
-                            <div class="mt-1">
-                                <label class="inline-flex items-center mr-4">
-                                    <flux:radio wire:model="visit_type" value="in-person" class="text-green-600" />
-                                    <span class="ml-2 text-zinc-700 dark:text-zinc-300">In-Person</span>
-                                </label>
-                                <label class="inline-flex items-center">
-                                    <flux:radio wire:model="visit_type" value="virtual" class="text-green-600" />
-                                    <span class="ml-2 text-zinc-700 dark:text-zinc-300">Virtual</span>
-                                </label>
-                            </div>
-                            @error('visit_type')
                                 <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>

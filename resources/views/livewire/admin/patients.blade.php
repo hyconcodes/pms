@@ -337,7 +337,7 @@ new class extends Component {
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-zinc-100">
                                 {{ $patient->created_at->format('M d, Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="{{ route('admin.medical-records', $patient->id) }}"
+                                <a href="{{ route('view.patient', $patient->id) }}"
                                     class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-3">
                                     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">

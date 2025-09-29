@@ -52,6 +52,11 @@
                         :current="request()->routeIs('admin.specializations')" wire:navigate>{{ __('Specialization Management') }}
                     </flux:navlist.item>
                 @endcan
+                @can(['approve.appointments'])
+                    <flux:navlist.item icon="briefcase" :href="route('doctor.view.all.appointment')"
+                        :current="request()->routeIs('doctor.view.all.appointment')" wire:navigate>{{ __('Appointments') }}
+                    </flux:navlist.item>
+                @endcan
             </flux:navlist.group>
         </flux:navlist>
 
