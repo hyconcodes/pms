@@ -23,8 +23,24 @@
                 <flux:navlist.item icon="home" :href="route('patient.dashboard')" :current="request()->routeIs('patient.dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 @endrole
-                @role(['doctor', 'pharmacist'])
+                @role(['patient'])
+                <flux:navlist.item icon="calendar" :href="route('patient.all.appointments')" :current="request()->routeIs('patient.all.appointments')"
+                    wire:navigate>{{ __('My Appointments') }}</flux:navlist.item>
+                @endrole
+                @role(['patient'])
+                <flux:navlist.item icon="briefcase" :href="route('patient.my-medical-record')" :current="request()->routeIs('patient.my-medical-record')"
+                    wire:navigate>{{ __('My Medical Record') }}</flux:navlist.item>
+                @endrole
+                @role(['doctor'])
                 <flux:navlist.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')"
+                    wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                @endrole
+                @role(['cashier'])
+                <flux:navlist.item icon="home" :href="route('cashier.dashboard')" :current="request()->routeIs('cashier.dashboard')"
+                    wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                @endrole
+                @role(['pharmacist'])
+                <flux:navlist.item icon="home" :href="route('pharmacist.dashboard')" :current="request()->routeIs('pharmacist.dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 @endrole
                 @can(['view.roles', 'create.roles', 'edit.roles', 'delete.roles', 'assign.permissions'])
@@ -42,6 +58,11 @@
                         :current="request()->routeIs('staff.doc')" wire:navigate>{{ __('Manage Doctors') }}
                     </flux:navlist.item>
                 @endcan
+                @can(['view.staff', 'create.staff', 'edit.staff', 'delete.staff'])
+                    <flux:navlist.item icon="user" :href="route('staff.cashier')"
+                        :current="request()->routeIs('staff.cashier')" wire:navigate>{{ __('Manage Cashiers') }}
+                    </flux:navlist.item>
+                @endcan
                 @can(['view.medical.records'])
                     <flux:navlist.item icon="user" :href="route('admin.patients')"
                         :current="request()->routeIs('admin.patients')" wire:navigate>{{ __('Manage Patients') }}
@@ -55,6 +76,21 @@
                 @can(['approve.appointments'])
                     <flux:navlist.item icon="briefcase" :href="route('doctor.view.all.appointment')"
                         :current="request()->routeIs('doctor.view.all.appointment')" wire:navigate>{{ __('Appointments') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['accept.payment'])
+                    <flux:navlist.item icon="credit-card" :href="route('cashier.view.all.billing')"
+                        :current="request()->routeIs('cashier.view.all.billing')" wire:navigate>{{ __('Consult Billing') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['accept.payment'])
+                    <flux:navlist.item icon="credit-card" :href="route('cashier.view.all.meds.billing')"
+                        :current="request()->routeIs('cashier.view.all.meds.billing')" wire:navigate>{{ __('Medications Billing') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['create.meds', 'edit.meds', 'delete.meds', 'view.meds'])
+                    <flux:navlist.item icon="cube" :href="route('pharmacist.meds')"
+                        :current="request()->routeIs('pharmacist.meds')" wire:navigate>{{ __('Manage Medications') }}
                     </flux:navlist.item>
                 @endcan
             </flux:navlist.group>

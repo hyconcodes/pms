@@ -71,17 +71,20 @@
                         )->count() }};
                 const patientCount =
                     {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'patient')->count() }};
+                const cashierCount =
+                    {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'cashier')->count() }};
 
                 new Chart(roleCtx, {
                     type: 'pie',
                     data: {
-                        labels: ['Doctors', 'Pharmacists', 'Patients'],
+                        labels: ['Doctors', 'Pharmacists', 'Patients', 'Cashiers'],
                         datasets: [{
-                            data: [doctorCount, pharmacistCount, patientCount],
+                            data: [doctorCount, pharmacistCount, patientCount, cashierCount],
                             backgroundColor: [
                                 'rgba(54, 162, 235, 0.8)',
                                 'rgba(255, 99, 132, 0.8)',
-                                'rgba(75, 192, 192, 0.8)'
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(255, 206, 86, 0.8)'
                             ]
                         }]
                     },

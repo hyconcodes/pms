@@ -24,7 +24,9 @@ class MedicalRecord extends Model
         'height',
         'allergies',
         'status',
-        'apid'
+        'apid',
+        'payment_method',
+        'payment_amount',
     ];
 
     protected $casts = [

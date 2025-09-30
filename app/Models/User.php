@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'matric_no',
         'phone',
+        'gender',
         'address',
         'date_of_birth',
         'emergency_contact',

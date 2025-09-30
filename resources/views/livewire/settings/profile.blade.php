@@ -13,6 +13,7 @@ new class extends Component {
     public ?string $address = '';
     public ?string $date_of_birth = '';
     public ?string $emergency_contact = '';
+    public ?string $gender = '';
 
     /**
      * Mount the component.
@@ -26,6 +27,7 @@ new class extends Component {
         $this->address = $user->address;
         $this->date_of_birth = $user->date_of_birth;
         $this->emergency_contact = $user->emergency_contact;
+        $this->gender = $user->gender;
     }
 
     /**
@@ -49,6 +51,7 @@ new class extends Component {
             'address' => ['nullable', 'string'],
             'date_of_birth' => ['nullable', 'date'],
             'emergency_contact' => ['nullable', 'string'],
+            'gender' => ['nullable', 'string', 'in:male,female,other'],
         ]);
 
         $user->fill($validated);
@@ -108,6 +111,13 @@ new class extends Component {
                     </div>
                 @endif
             </div>
+
+            <flux:select wire:model="gender" :label="__('Gender')" placeholder="Select your gender">
+                <option value="">{{ __('Select') }}</option>
+                <option value="male">{{ __('Male') }}</option>
+                <option value="female">{{ __('Female') }}</option>
+                <option value="other">{{ __('Other') }}</option>
+            </flux:select>
 
             <flux:input wire:model="phone" :label="__('Phone')" type="tel" autocomplete="tel" />
             

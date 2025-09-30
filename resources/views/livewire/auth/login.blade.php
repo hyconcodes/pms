@@ -48,6 +48,10 @@ new #[Layout('components.layouts.auth')] class extends Component {
             $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
         } elseif ($user->hasRole('patient')) {
             $this->redirectIntended(default: route('patient.dashboard', absolute: false), navigate: true);
+        } elseif ($user->hasRole('cashier')) {
+            $this->redirectIntended(default: route('cashier.dashboard', absolute: false), navigate: true);
+        } elseif ($user->hasRole('pharmacist')) {
+            $this->redirectIntended(default: route('pharmacist.dashboard', absolute: false), navigate: true);
         } else {
             $this->redirectIntended(default: route('admin.dashboard', absolute: false), navigate: true);
         }

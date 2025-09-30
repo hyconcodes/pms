@@ -34,7 +34,19 @@
                     @if (Route::has('login'))
                         <div class="flex items-center space-x-4">
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="text-white hover:text-green-200 transition">Dashboard</a>
+                                @if(auth()->user()->hasRole('doctor'))
+                                    <a href="{{ route('admin.dashboard') }}" class="text-white hover:text-green-200 transition">Dashboard</a>
+                                @elseif(auth()->user()->hasRole('pharmacist'))
+                                    <a href="{{ route('pharmacist.dashboard') }}" class="text-white hover:text-green-200 transition">Dashboard</a>
+                                @elseif(auth()->user()->hasRole('super-admin'))
+                                    <a href="{{ route('dashboard') }}" class="text-white hover:text-green-200 transition">Dashboard</a>
+                                @elseif(auth()->user()->hasRole('cashier'))
+                                    <a href="{{ route('cashier.dashboard') }}" class="text-white hover:text-green-200 transition">Dashboard</a>
+                                @elseif(auth()->user()->hasRole('patient'))
+                                    <a href="{{ route('patient.dashboard') }}" class="text-white hover:text-green-200 transition">Dashboard</a>
+                                @else
+                                    <a href="{{ url('/dashboard') }}" class="text-white hover:text-green-200 transition">Dashboard</a>
+                                @endif
                             @else
                                 <a href="{{ route('login') }}" class="text-white hover:text-green-200 transition">Log in</a>
 

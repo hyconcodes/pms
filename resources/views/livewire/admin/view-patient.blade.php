@@ -71,6 +71,10 @@ new class extends Component {
                             <p class="text-xs uppercase tracking-wide text-green-600 dark:text-green-400">Gender</p>
                             <p class="mt-1 text-slate-800 dark:text-slate-100 font-semibold capitalize">{{ $patient->gender ?: '—' }}</p>
                         </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-green-600 dark:text-green-400">Emergency Contact</p>
+                            <p class="mt-1 text-slate-800 dark:text-slate-100 font-semibold">{{ $patient->emergency_contact ?: '—' }}</p>
+                        </div>
                         <div class="sm:col-span-2 lg:col-span-2">
                             <p class="text-xs uppercase tracking-wide text-green-600 dark:text-green-400">Member Since</p>
                             <p class="mt-1 text-slate-800 dark:text-slate-100 font-semibold">
