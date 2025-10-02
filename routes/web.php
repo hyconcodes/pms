@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('/cashier/dashboard', 'cashier.dashboard')
         ->middleware(['role:cashier'])
         ->name('cashier.dashboard');
-    Volt::route('/cashier/all-appointment', 'cashier.meds-billing')
+    Volt::route('/cashier/all-appointment', 'cashier.all-billing')
         ->middleware(['permission:accept.payment'])
         ->name('cashier.view.all.billing');
     Volt::route('/cashier/billing/all-medications', 'cashier.meds-billing')
