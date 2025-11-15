@@ -7,6 +7,8 @@ use App\Models\MedicalRecord;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AppointmentBooked;
 
 new class extends Component {
     public $doctor_id;
@@ -206,6 +208,8 @@ new class extends Component {
                 'appointment_time' => $this->preferred_time,
                 'apid' => $apid,
             ]);
+
+            Mail::to($user->email)->send(new AppointmentBooked($appointment));
 
             Log::info('Appointment booked successfully', [
                 'appointment_id' => $appointment->id,
